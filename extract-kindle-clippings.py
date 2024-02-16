@@ -212,13 +212,23 @@ for key in pub_title.keys():
         print(ex)
     finally:
         if not newfile:
-            # Many notes, output with header and metadata in a separate file
-            titlestr = 'Highlights from ' + title
+            # Output with header and metadata in a separate file
+            # Write metadata
+            out.write('---' + '\n')
+            out.write('date: ' + datetime.now().strftime('%Y-%m-%d %H:%M') + '\n')
+            out.write('title: ' + title + '\n')
+            out.write('authors: ' + author + '\n')
+            out.write('category: books' + '\n')
+            out.write('publication_date: ' + '\n')
+            out.write('tags: [to_be_reviewed]' + '\n')
+            out.write('---' + '\n')
+
+            titlestr = '# YYYY 📖 ' + title
             out.write(titlestr + '\n')
-            out.write(('=' * len(titlestr)) + '\n\n')
-            if author != 'Unknown':
-                out.write('Authors:: [[' + author + ']]' + '\n')
-            out.write('Recommended By:: \nTags:: [[📚 Books]]\n\n# ' + title + '\n\n### Highlights\n')
+            out.write('## Notes' + '\n')
+            out.write('- ' + '\n')
+            out.write('## Highlights' + '\n')
+            out.write('- ' + '\n')
 
         last_date = datetime.now()
 
@@ -245,7 +255,6 @@ for key in pub_title.keys():
         out.close()
 
         # Update file modification time to time of last note
-
         if last_date.tzinfo is None or last_date.tzinfo.utcoffset(last_date) is None:
             epoch = datetime(1970, 1, 1)
         else:
