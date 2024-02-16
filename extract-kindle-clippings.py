@@ -61,7 +61,7 @@ def getvalidfilename(filename):
 
 note_sep = '=========='
 
-commentstr = '.. '  # RST (reStructuredText) comment
+commentstr = '.. '  # md (reStructuredText) comment
 
 regex_title = re.compile('^(.*)\((.*)\)$')
 regex_info = re.compile(r'^- (\S+) (.*)[\s|]+Added on\s+(.+)$')
@@ -88,11 +88,11 @@ print('Scanning output dir', outpath)
 for directory, subdirlist, filelist in os.walk(outpath):
     for fname in filelist:
         ext = fname[-4:]
-        if ext == '.rst' or ext == '.RST':
-            print('Found RST file', fname, 'in directory', directory)
+        if ext == '.md' or ext == '.MD':
+            print('Found MD file', fname, 'in directory', directory)
             # open file, find commend lines, store hashes
-            rst = open(directory + '/' + fname, 'r', encoding="utf-8")
-            line = rst.readline()
+            md = open(directory + '/' + fname, 'r', encoding="utf-8")
+            line = md.readline()
             lines = 0
             hashes = 0
             while line:
@@ -102,11 +102,11 @@ for directory, subdirlist, filelist in os.walk(outpath):
                     foundhash = findhash_result[0]
                     existing_hashes[foundhash] = fname
                     hashes += 1
-                line = rst.readline()
-            rst.close()
+                line = md.readline()
+            md.close()
             print(hashes, 'hashes found in', lines, 'scanned lines')
         else:
-            print('File', fname, 'does not seem to be RST, skipping', ext)
+            print('File', fname, 'does not seem to be md, skipping', ext)
 
 print('Found', len(existing_hashes), 'existing note hashes')
 print('Processing clippings file', infile)
@@ -183,7 +183,6 @@ while line:
 mc.close()
 
 for key in pub_title.keys():
-    nr_notes = len(pub_notes[key])
     author = pub_author[key]
     title = pub_title[key]
     short_title = title.split('|')[0]
@@ -191,12 +190,7 @@ for key in pub_title.keys():
     short_title = short_title.split('. ')[0]
     if len(short_title) > 128:
         short_title = short_title[:127]
-    if (nr_notes > 2):
-        fname = author + ' - ' + short_title.strip() + '.rst'
-        short = 0
-    else:
-        fname = 'short_notes.rst'
-        short = 1
+    fname = author + ' - ' + short_title.strip()
 
     new_hashes = 0
     for note_hash in pub_hashes[key]:
@@ -217,15 +211,7 @@ for key in pub_title.keys():
     except Exception as ex:
         print(ex)
     finally:
-        if short:
-            # Short note, output a small header and append to short note file
-            if author != 'Unknown':
-                titlestr = author + ' - ' + title
-            else:
-                titlestr = title
-            out.write(titlestr + '\n')
-            out.write(('-' * len(titlestr)) + '\n\n')
-        elif not newfile:
+        if not newfile:
             # Many notes, output with header and metadata in a separate file
             titlestr = 'Highlights from ' + title
             out.write(titlestr + '\n')
@@ -247,9 +233,6 @@ for key in pub_title.keys():
                 print('Adding new note to', outfile + ':', note_hash, note_type, note_loc, note_date)
 
                 comment = str(commentstr + note_hash + ' ; ' + note_type + ' ; ' + note_loc + ' ; ' + note_date)
-
-                if short:
-                    comment += ' ; ' + author + ' ; ' + title
 
                 # this adds metadata before each note.
                 # out.write(comment + '\n\n')
