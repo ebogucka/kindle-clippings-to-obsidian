@@ -223,7 +223,7 @@ for key in pub_title.keys():
             out.write('tags: [to_be_reviewed]' + '\n')
             out.write('---' + '\n')
 
-            titlestr = '# YYYY 📖 ' + title
+            titlestr = '# [[YYYY 📖 ' + title + ']]'
             out.write(titlestr + '\n')
             out.write('## Notes' + '\n')
             out.write('- ' + '\n')
