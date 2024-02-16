@@ -55,7 +55,8 @@ if not os.path.isdir(outpath):
 def getvalidfilename(filename):
     import unicodedata
     clean = unicodedata.normalize('NFKD', filename)
-    return re.sub('[^\w\s()\'.?!:-]', '', clean)
+    clean = re.sub(r'[^\w\s-]', '', clean.lower())
+    return re.sub(r'[-\s]+', '-', clean).strip('-_') + '.md'
 
 
 note_sep = '=========='
@@ -90,7 +91,7 @@ for directory, subdirlist, filelist in os.walk(outpath):
         if ext == '.rst' or ext == '.RST':
             print('Found RST file', fname, 'in directory', directory)
             # open file, find commend lines, store hashes
-            rst = open(directory + '/' + fname, 'r')
+            rst = open(directory + '/' + fname, 'r', encoding="utf-8")
             line = rst.readline()
             lines = 0
             hashes = 0
@@ -110,7 +111,7 @@ for directory, subdirlist, filelist in os.walk(outpath):
 print('Found', len(existing_hashes), 'existing note hashes')
 print('Processing clippings file', infile)
 
-mc = open(infile, 'r')
+mc = open(infile, 'r', encoding="utf-8")
 
 mc.read(1)  # Skip first character
 
@@ -211,57 +212,60 @@ for key in pub_title.keys():
 
     newfile = os.path.isfile(outfile)
 
-    out = open(outfile, 'a')
+    try:
+        out = open(outfile, 'a', encoding="utf-8")
+    except Exception as ex:
+        print(ex)
+    finally:
+        if short:
+            # Short note, output a small header and append to short note file
+            if author != 'Unknown':
+                titlestr = author + ' - ' + title
+            else:
+                titlestr = title
+            out.write(titlestr + '\n')
+            out.write(('-' * len(titlestr)) + '\n\n')
+        elif not newfile:
+            # Many notes, output with header and metadata in a separate file
+            titlestr = 'Highlights from ' + title
+            out.write(titlestr + '\n')
+            out.write(('=' * len(titlestr)) + '\n\n')
+            if author != 'Unknown':
+                out.write('Authors:: [[' + author + ']]' + '\n')
+            out.write('Recommended By:: \nTags:: [[📚 Books]]\n\n# ' + title + '\n\n### Highlights\n')
 
-    if short:
-        # Short note, output a small header and append to short note file
-        if author != 'Unknown':
-            titlestr = author + ' - ' + title
+        last_date = datetime.now()
+
+        for note_hash in pub_hashes[key]:
+            note = notes[note_hash]
+            note_type = types[note_hash]
+            note_date = dates[note_hash]
+            note_loc = locations[note_hash]
+            if note_hash in existing_hashes:
+                print('Note', note_hash, 'is already in', existing_hashes[note_hash])
+            else:
+                print('Adding new note to', outfile + ':', note_hash, note_type, note_loc, note_date)
+
+                comment = str(commentstr + note_hash + ' ; ' + note_type + ' ; ' + note_loc + ' ; ' + note_date)
+
+                if short:
+                    comment += ' ; ' + author + ' ; ' + title
+
+                # this adds metadata before each note.
+                # out.write(comment + '\n\n')
+                out.write('- ' + note + '\n')
+            try:
+                last_date = parse(note_date)
+            except:
+                pass
+
+        out.close()
+
+        # Update file modification time to time of last note
+
+        if last_date.tzinfo is None or last_date.tzinfo.utcoffset(last_date) is None:
+            epoch = datetime(1970, 1, 1)
         else:
-            titlestr = title
-        out.write(titlestr + '\n')
-        out.write(('-' * len(titlestr)) + '\n\n')
-    elif not newfile:
-        # Many notes, output with header and metadata in a separate file
-        titlestr = 'Highlights from ' + title
-        out.write(titlestr + '\n')
-        out.write(('=' * len(titlestr)) + '\n\n')
-        if author != 'Unknown':
-            out.write('Authors:: [[' + author + ']]' + '\n')
-        out.write('Recommended By:: \nTags:: [[📚 Books]]\n\n# ' + title + '\n\n### Highlights\n')
-
-    last_date = datetime.now()
-
-    for note_hash in pub_hashes[key]:
-        note = notes[note_hash]
-        note_type = types[note_hash]
-        note_date = dates[note_hash]
-        note_loc = locations[note_hash]
-        if note_hash in existing_hashes:
-            print('Note', note_hash, 'is already in', existing_hashes[note_hash])
-        else:
-            print('Adding new note to', outfile + ':', note_hash, note_type, note_loc, note_date)
-
-            comment = str(commentstr + note_hash + ' ; ' + note_type + ' ; ' + note_loc + ' ; ' + note_date)
-
-            if short:
-                comment += ' ; ' + author + ' ; ' + title
-
-            # this adds metadata before each note.
-            # out.write(comment + '\n\n')
-            out.write('- ' + note + '\n')
-        try:
-            last_date = parse(note_date)
-        except:
-            pass
-
-    out.close()
-
-    # Update file modification time to time of last note
-
-    if last_date.tzinfo is None or last_date.tzinfo.utcoffset(last_date) is None:
-        epoch = datetime(1970, 1, 1)
-    else:
-        epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
-    note_timestamp = (last_date - epoch) / timedelta(seconds=1)
-    os.utime(outfile, (note_timestamp, note_timestamp))
+            epoch = datetime(1970, 1, 1, tzinfo=timezone.utc)
+        note_timestamp = (last_date - epoch) / timedelta(seconds=1)
+        os.utime(outfile, (note_timestamp, note_timestamp))
