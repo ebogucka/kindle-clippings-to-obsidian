@@ -218,8 +218,8 @@ for key in pub_title.keys():
             out.write('date: ' + datetime.now().strftime('%Y-%m-%d %H:%M') + '\n')
             out.write('title: ' + title.replace(':', '.') + '\n')
             out.write('authors: ' + author + '\n')
-            out.write('category: books' + '\n')
             out.write('publication_date: ' + '\n')
+            out.write('category: books' + '\n')
             out.write('tags: [to_be_reviewed]' + '\n')
             out.write('---' + '\n')
 
