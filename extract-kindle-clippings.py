@@ -216,7 +216,7 @@ for key in pub_title.keys():
             # Write metadata
             out.write('---' + '\n')
             out.write('date: ' + datetime.now().strftime('%Y-%m-%d %H:%M') + '\n')
-            out.write('title: ' + title.replace(':', '.') + '\n')
+            out.write('title: ' + title + '\n')
             out.write('authors: ' + author + '\n')
             out.write('publication_date: ' + '\n')
             out.write('category: books' + '\n')
