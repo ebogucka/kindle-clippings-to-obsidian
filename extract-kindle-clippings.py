@@ -215,17 +215,21 @@ for key in pub_title.keys():
             # Output with header and metadata in a separate file
             # Write metadata
             out.write('---' + '\n')
-            out.write('date: ' + datetime.now().strftime('%Y-%m-%d %H:%M') + '\n')
+            out.write('created_date: ' + datetime.now().strftime('%Y-%m-%d') + '\n')
+            out.write('modified_date: ' + datetime.now().strftime('%Y-%m-%d') + '\n')
+            out.write('up: "[[📚 Books MOC]]" ' + '\n')
             out.write('title: ' + title + '\n')
-            out.write('authors: ' + author + '\n')
+            out.write('authors: [' + author + ']' + '\n')
             out.write('publication_date: ' + '\n')
+            out.write('cover: ' + '\n')
             out.write('category: books' + '\n')
-            out.write('tags: [to_be_reviewed]' + '\n')
+            out.write('tags: [review]' + '\n')
             out.write('---' + '\n')
 
-            titlestr = '# [[YYYY 📖 ' + title + ']]'
+            titlestr = '# [[YYYY 📚 ' + title + ']]'
             out.write(titlestr + '\n')
-            out.write('## Notes' + '\n')
+            out.write('![cover|150]()' + '\n')
+            out.write('## Summary' + '\n')
             out.write('- ' + '\n')
             out.write('## Highlights' + '\n')
             out.write('- ' + '\n')
